@@ -1,0 +1,488 @@
+classdef Fuzzy_EQ_Ver_01 < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        UIFigure                     matlab.ui.Figure
+        Label                        matlab.ui.control.Label
+        TimeSignatureEditField       matlab.ui.control.NumericEditField
+        TimeSignatureEditFieldLabel  matlab.ui.control.Label
+        FuzzyEQV01Label              matlab.ui.control.Label
+        BrowseButton                 matlab.ui.control.Button
+        ExportButton                 matlab.ui.control.Button
+        InstrumentDropDown           matlab.ui.control.DropDown
+        InstrumentDropDownLabel      matlab.ui.control.Label
+        BPMEditField                 matlab.ui.control.NumericEditField
+        BPMEditFieldLabel            matlab.ui.control.Label
+        HighLabel                    matlab.ui.control.Label
+        MidLabel                     matlab.ui.control.Label
+        HighKnob                     matlab.ui.control.Knob
+        MidKnob                      matlab.ui.control.Knob
+        LowKnob                      matlab.ui.control.Knob
+        LowKnobLabel                 matlab.ui.control.Label
+    end
+
+
+    properties (Access = private)
+    end
+
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Value changed function: LowKnob
+        function LowKnobValueChanged(app, event)
+           global User_Low
+            User_Low = app.LowKnob.Value;
+            
+        end
+
+        % Value changed function: MidKnob
+        function MidKnobValueChanged(app, event)
+           global User_Mid
+            User_Mid = app.MidKnob.Value;
+            
+        end
+
+        % Value changed function: HighKnob
+        function HighKnobValueChanged(app, event)
+           global User_High
+            User_High = app.HighKnob.Value;
+            
+        end
+
+        % Button pushed function: BrowseButton
+        function BrowseButtonPushed(app, event)
+           global x
+           global Fs
+            [file,path] = uigetfile({'*.mp3';'*.wav';'*.*'},...
+                          'File Selector');
+            [x, Fs] = audioread(fullfile(path, file));
+        end
+
+        % Value changed function: BPMEditField
+        function BPMEditFieldValueChanged(app, event)
+            global BPM
+            BPM = app.BPMEditField.Value;
+            
+        end
+
+        % Value changed function: InstrumentDropDown
+        function InstrumentDropDownValueChanged(app, event)
+           global Instrument
+            Instrument = app.InstrumentDropDown.Value;
+            
+        end
+
+        % Value changed function: TimeSignatureEditField
+        function TimeSignatureEditFieldValueChanged(app, event)
+           global  timesig
+           timesig = app.TimeSignatureEditField.Value;
+            
+        end
+
+        % Button pushed function: ExportButton
+        function ExportButtonPushed(app, event)
+            global User_Low
+            global User_Mid
+            global User_High
+            global file
+            global BPM
+            global Instrument
+            global timesig
+            global x
+            global Fs
+            bps=bpm/60;
+            barsec=(1/bps)*timesig;
+            i=1;
+            j=1;
+            bar{i}=x(1:(Fs*barsec)-1);
+            i=i+1;
+            while Fs*(barsec*(i+1))<=length(x)
+                bar{i}=x(Fs*(barsec*j):(Fs*(barsec*(j+1))-1));
+                i=i+1;
+                j=j+1;
+            end
+            j=j+1;
+            bar{i}=x(Fs*(barsec*j):length(x));
+            bar=bar';
+            %**************************
+            %**********FFT Part********
+            T=1/Fs;
+            for k=1:length(bar)
+                L(k)=length(bar{k});
+            end
+            %**************************
+            for k=1:length(bar)
+                y{k}=fft(bar{k});
+                P2{k} = (abs(y{k}/L(k)));
+                P1{k} = P2{k}(1:L(k)/2+1);
+                P1{k}(2:end-1) = 2*P1{k}(2:end-1);
+                f{k} = Fs*(0:(L(k)/2))/L(k);
+            end
+            for n=1:length(P1{2})
+                some=0;   %???position
+                for m=2:length(P1)-1
+                    some=P1{m}(n)+some;
+                end
+                aver(n)=some/(length(P1)-2);
+            end
+            max_aver=max(aver);
+            aver_nor=aver/max_aver;
+            
+            if Instrument=='Bass'
+                Low=aver_nor(40:80);
+                Low_range=[40 80];
+                Mid=aver_nor(81:320);
+                Mid_range=[81 320];
+                High=aver_nor(321:5000);
+                High_range=[321 5000];
+                
+                aver_Low=sum(Low)/length(Low);
+                aver_Mid=sum(Mid)/length(Mid);
+                aver_High=sum(High)/length(High);
+                
+            else if Instrument=='Guitar'
+                    Low=aver_nor(80:250);
+                    Low_range=[80 250];
+                    Mid=aver_nor(251:1250);
+                    Mid_range=[251 1250];
+                    High=aver_nor(1251:5000);
+                    High_range=[1251 5000];
+ 
+                    aver_Low=sum(Low)/length(Low);
+                    aver_Mid=sum(Mid)/length(Mid);
+                    aver_High=sum(High)/length(High);    
+                
+            else if Instrument=='Snare'
+                    Low=aver_nor(120:240);
+                    Low_range=[120 240];
+                    Mid=aver_nor(241:2500);
+                    Mid_range=[241 2500];
+                    High=aver_nor(2501:5000);
+                    High_range=[2501 5000];
+ 
+                    aver_Low=sum(Low)/length(Low);
+                    aver_Mid=sum(Mid)/length(Mid);
+                    aver_High=sum(High)/length(High);
+                    
+            else if Instrument=='Kick'
+                    Low=aver_nor(50:80);
+                    Low_range=[50 80];
+                    Mid=aver_nor(81:500);
+                    Mid_range=[81 500];
+                    High=aver_nor(501:6300);
+                    High_range=[501 6300];
+ 
+                    aver_Low=sum(Low)/length(Low);
+                    aver_Mid=sum(Mid)/length(Mid);
+                    aver_High=sum(High)/length(High);
+                    
+            else if Instrument=='Piano'
+                    Low=aver_nor(27:250);
+                    Low_range=[27 250];
+                    Mid=aver_nor(251:2000);
+                    Mid_range=[251 2000];
+                    High=aver_nor(2001:10000);
+                    High_range=[2001 10000];
+ 
+                    aver_Low=sum(Low)/length(Low);
+                    aver_Mid=sum(Mid)/length(Mid);
+                    aver_Highs=sum(High)/length(High);
+                    
+            else if Instrument=='Male Vocal'
+                    Low=aver_nor(120:900);
+                    Low_range=[120 900];
+                    Mid=aver_nor(901:8000);
+                    Mid_range=[901 8000];
+                    High=aver_nor(8001:16000);
+                    High_range=[8001 16000];
+ 
+                    aver_Low=sum(Low)/length(Low);
+                    aver_Mid=sum(Mid)/length(Mid);
+                    aver_High=sum(High)/length(High);
+                    
+            else if Instrument=='Female Vocal'
+                    Low=aver_nor(240:1200);
+                    Low_range=[240 1200];
+                    Mid=aver_nor(1201:8000);
+                    Mid_range=[1201 8000];
+                    High=aver_nor(8001:16000);
+                    High_range=[8001 16000];
+ 
+                    aver_Low=sum(Low)/length(Low);
+                    aver_Mid=sum(Mid)/length(Mid);
+                    aver_High=sum(High)/length(High);
+                           
+            end
+            
+            [val_max,max_idx]=max(aver_nor);
+            low_idk=0;
+            if  Mid_range(1)<=max_idx<=Mid_range(2)
+                low_lim=max_idx;
+                m=1;
+                while low_lim/2>=Low_range(1)
+                    low_idk(m)=low_lim/2;
+                    low_lim=low_lim/2;
+                    m=m+1;
+                end
+                low_idk=flip(low_idk);
+            
+                high_lim=max_idx;
+                m=1;
+                while high_lim*2<=High_range(2)
+                    high_idk(m)=high_lim*2;
+                    high_lim=high_lim*2;
+                    m=m+1;
+                end
+                cen_idk=[low_idk high_idk];
+                low_cen=min(cen_idk);
+                mid_cen=max_idx;
+                high_cen=max(cen_idk);
+            end
+            
+            if max_idx<Low_range(2)
+                mid_lim=max_idx;
+                m=1;
+                while mid_lim*2<=Mid_range(2)
+                    mid_idk(m)=mid_lim*2;
+                    mid_lim=mid_lim*2;
+                    m=m+1;
+                end
+                 high_lim=mid_lim;
+                 m=1;
+                while high_lim*2<=High_range(2)
+                    high_idk(m)=high_lim*2;
+                    high_lim=high_lim*2;
+                    m=m+1;
+                end
+                low_cen=max_idx;
+                mid_cen=max(mid_idk);
+                high_cen=max(high_idk);
+            end
+            
+            %Input Part***************************************
+            
+            User_G_B1=-5;
+            User_G_B2=7;
+            User_G_B3=3;
+            
+            %Fuzzy Part***************************************
+            
+            Fuzzy_Gain = readfis('Fuzzy_Gain_Ver1.fis');
+            %type Fuzzy_Gain_Ver1.fis;
+            evalfis([User_G_B1 User_G_B2 User_G_B3 aver_Low aver_Mid aver_High], Fuzzy_Gain);
+            Gain=ans;
+            clear('ans');
+            Fuzzy_Q = readfis('Fuzzy_Q_Ver1.fis');
+            evalfis([Gain(1) Gain(2) Gain(3)], Fuzzy_Q);
+            Q_fuzz=ans;
+            clear('ans');
+            
+            %EQ Part**********************
+            %*********Fix Variable********
+            fs=41000;
+            fc=[low_cen mid_cen high_cen];
+            G=[Gain(1) Gain(2) Gain(3)];
+            Q=[Q_fuzz(1) Q_fuzz(2) Q_fuzz(3)];
+            n=44100;
+            wc = 2*pi*fc/fs;
+            %band1
+            A(1) = sqrt(10^(G(1)/20));
+            wc(1) = 2*pi*fc(1)/fs;
+            wS(1) = sin(wc(1));
+            wC(1) = cos(wc(1));
+            alpha(1) = wS(1)/(2*Q(1));
+             
+            b0(1) = 1+(alpha(1) * A(1));
+            b1(1) = (-2)*wC(1);
+            b2(1) = 1-(alpha(1)*A(1));
+            a0(1) = 1+(alpha(1)/A(1));
+            a1(1) = (-2)*(wC(1));
+            a2(1) = 1-(alpha(1)/A(1));
+            
+            Hu{1} = [(b0(1)/a0(1)) (b1(1)/a0(1)) (b2(1)/a0(1))];
+            Hl{1} = [1 (a1(1)/a0(1)) a2(1)/a0(1)];
+            
+            %band2
+            A(2) = sqrt(10^(G(2)/20));
+            wc(2) = 2*pi*fc(2)/fs;
+            wS(2) = sin(wc(2));
+            wC(2) = cos(wc(2));
+            alpha(2) = wS(2)/(2*Q(2));
+            
+            b0(2) = 1+(alpha(2) * A(2));
+            b1(2) = (-2)*wC(2);
+            b2(2) = 1-(alpha(2)*A(2));
+            a0(2) = 1+(alpha(2)/A(2));
+            a1(2) = (-2)*(wC(2));
+            a2(2) = 1-(alpha(2)/A(2));
+            
+            Hu{2} = [(b0(2)/a0(2)) (b1(2)/a0(2)) (b2(2)/a0(2))];
+            Hl{2} = [1 (a1(2)/a0(2)) a2(2)/a0(2)];
+            
+            %band3
+            A(3) = sqrt(10^(G(3)/20));
+            wc(3) = 2*pi*fc(3)/fs;
+            wS(3) = sin(wc(3));
+            wC(3) = cos(wc(3));
+            alpha(3) = wS(3)/(2*Q(3));
+
+            b0(3) = 1+(alpha(3) * A(3));
+            b1(3) = (-2)*wC(3);
+            b2(3) = 1-(alpha(3)*A(3));
+            a0(3) = 1+(alpha(3)/A(3));
+            a1(3) = (-2)*(wC(3));
+            a2(3) = 1-(alpha(3)/A(3));
+            
+            Hu{3} = [(b0(3)/a0(3)) (b1(3)/a0(3)) (b2(3)/a0(3))];
+            Hl{3} = [1 (a1(3)/a0(3)) a2(3)/a0(3)];
+             
+            band{1}=dfilt.df1(Hu{1},Hl{1});
+            band{2}=dfilt.df1(Hu{2},Hl{2});
+            band{3}=dfilt.df1(Hu{3},Hl{3});
+            allband = dfilt.cascade(band{1},band{2},band{3});
+            h=fvtool(allband);
+            h.Fs = fs;
+            h.FrequencyRange='[0, fs/2)';
+            y=filter(allband,x);
+
+            audiowrite('Save Audio.wav',y,fs)
+            
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create UIFigure and hide until all components are created
+            app.UIFigure = uifigure('Visible', 'off');
+            app.UIFigure.Position = [100 100 640 480];
+            app.UIFigure.Name = 'UI Figure';
+
+            % Create LowKnobLabel
+            app.LowKnobLabel = uilabel(app.UIFigure);
+            app.LowKnobLabel.HorizontalAlignment = 'center';
+            app.LowKnobLabel.Position = [92 51 28 22];
+            app.LowKnobLabel.Text = 'Low';
+
+            % Create LowKnob
+            app.LowKnob = uiknob(app.UIFigure, 'continuous');
+            app.LowKnob.Limits = [-10 10];
+            app.LowKnob.ValueChangedFcn = createCallbackFcn(app, @LowKnobValueChanged, true);
+            app.LowKnob.Position = [52 107 108 108];
+
+            % Create MidKnob
+            app.MidKnob = uiknob(app.UIFigure, 'continuous');
+            app.MidKnob.Limits = [-10 10];
+            app.MidKnob.ValueChangedFcn = createCallbackFcn(app, @MidKnobValueChanged, true);
+            app.MidKnob.Position = [267 187 108 108];
+
+            % Create HighKnob
+            app.HighKnob = uiknob(app.UIFigure, 'continuous');
+            app.HighKnob.Limits = [-10 10];
+            app.HighKnob.ValueChangedFcn = createCallbackFcn(app, @HighKnobValueChanged, true);
+            app.HighKnob.Position = [478 107 108 108];
+
+            % Create MidLabel
+            app.MidLabel = uilabel(app.UIFigure);
+            app.MidLabel.HorizontalAlignment = 'center';
+            app.MidLabel.Position = [309 131 25 22];
+            app.MidLabel.Text = 'Mid';
+
+            % Create HighLabel
+            app.HighLabel = uilabel(app.UIFigure);
+            app.HighLabel.HorizontalAlignment = 'center';
+            app.HighLabel.Position = [517 51 30 22];
+            app.HighLabel.Text = 'High';
+
+            % Create BPMEditFieldLabel
+            app.BPMEditFieldLabel = uilabel(app.UIFigure);
+            app.BPMEditFieldLabel.HorizontalAlignment = 'right';
+            app.BPMEditFieldLabel.Position = [31 394 32 22];
+            app.BPMEditFieldLabel.Text = 'BPM';
+
+            % Create BPMEditField
+            app.BPMEditField = uieditfield(app.UIFigure, 'numeric');
+            app.BPMEditField.ValueChangedFcn = createCallbackFcn(app, @BPMEditFieldValueChanged, true);
+            app.BPMEditField.Position = [108 394 100 22];
+
+            % Create InstrumentDropDownLabel
+            app.InstrumentDropDownLabel = uilabel(app.UIFigure);
+            app.InstrumentDropDownLabel.HorizontalAlignment = 'right';
+            app.InstrumentDropDownLabel.Position = [20 333 62 22];
+            app.InstrumentDropDownLabel.Text = 'Instrument';
+
+            % Create InstrumentDropDown
+            app.InstrumentDropDown = uidropdown(app.UIFigure);
+            app.InstrumentDropDown.Items = {'Bass', 'Guitar', 'Snare', 'Kick', 'Piano', 'Male Vocal', 'Female Vocal'};
+            app.InstrumentDropDown.ValueChangedFcn = createCallbackFcn(app, @InstrumentDropDownValueChanged, true);
+            app.InstrumentDropDown.Position = [108 333 100 22];
+            app.InstrumentDropDown.Value = 'Bass';
+
+            % Create ExportButton
+            app.ExportButton = uibutton(app.UIFigure, 'push');
+            app.ExportButton.ButtonPushedFcn = createCallbackFcn(app, @ExportButtonPushed, true);
+            app.ExportButton.Position = [517 15 100 22];
+            app.ExportButton.Text = 'Export';
+
+            % Create BrowseButton
+            app.BrowseButton = uibutton(app.UIFigure, 'push');
+            app.BrowseButton.ButtonPushedFcn = createCallbackFcn(app, @BrowseButtonPushed, true);
+            app.BrowseButton.Position = [271 394 100 22];
+            app.BrowseButton.Text = 'Browse';
+
+            % Create FuzzyEQV01Label
+            app.FuzzyEQV01Label = uilabel(app.UIFigure);
+            app.FuzzyEQV01Label.FontSize = 24;
+            app.FuzzyEQV01Label.Position = [235 440 171 30];
+            app.FuzzyEQV01Label.Text = 'Fuzzy EQ V.0.1';
+
+            % Create TimeSignatureEditFieldLabel
+            app.TimeSignatureEditFieldLabel = uilabel(app.UIFigure);
+            app.TimeSignatureEditFieldLabel.HorizontalAlignment = 'right';
+            app.TimeSignatureEditFieldLabel.Position = [7 365 86 22];
+            app.TimeSignatureEditFieldLabel.Text = 'Time Signature';
+
+            % Create TimeSignatureEditField
+            app.TimeSignatureEditField = uieditfield(app.UIFigure, 'numeric');
+            app.TimeSignatureEditField.ValueChangedFcn = createCallbackFcn(app, @TimeSignatureEditFieldValueChanged, true);
+            app.TimeSignatureEditField.Position = [108 365 100 22];
+
+            % Create Label
+            app.Label = uilabel(app.UIFigure);
+            app.Label.Position = [210 365 25 22];
+            app.Label.Text = '/4';
+
+            % Show the figure after all components are created
+            app.UIFigure.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = Fuzzy_EQ_Ver_01
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end
