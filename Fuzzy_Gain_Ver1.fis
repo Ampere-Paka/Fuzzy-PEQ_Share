@@ -1,0 +1,155 @@
+[System]
+Name='Fuzzy_Gain_Ver1'
+Type='mamdani'
+Version=2.0
+NumInputs=6
+NumOutputs=3
+NumRules=54
+AndMethod='min'
+OrMethod='max'
+ImpMethod='min'
+AggMethod='max'
+DefuzzMethod='centroid'
+
+[Input1]
+Name='User_Input_B1'
+Range=[-10 10]
+NumMFs=6
+MF1='Cut_Big':'trapmf',[-10 -10 -6 -5]
+MF2='Cut_Mid':'trimf',[-6 -5 -4]
+MF3='Boost_Small':'trapmf',[0 0 3.5 5]
+MF4='Cut_Small':'trapmf',[-5 -4 0 0]
+MF5='Boost_Mid':'trimf',[4 5 6]
+MF6='Boost_Big':'trapmf',[5 6.5 10 10]
+
+[Input2]
+Name='User_Input_B2'
+Range=[-10 10]
+NumMFs=6
+MF1='Cut_Big':'trapmf',[-10 -10 -6 -5]
+MF2='Boost_Small':'trapmf',[0 0 3.5 5]
+MF3='Boost_Mid':'trimf',[4 5 6]
+MF4='Cut_Small':'trapmf',[-5 -4 0 0]
+MF5='Cut_Mid':'trimf',[-6 -5 -4]
+MF6='Boost_Big':'trapmf',[5 6.5 10 10]
+
+[Input3]
+Name='User_Input_B3'
+Range=[-10 10]
+NumMFs=6
+MF1='Cut_Big':'trapmf',[-10 -10 -6 -5]
+MF2='Cut_Mid':'trimf',[-6 -5 -4]
+MF3='Cut_Small':'trapmf',[-5 -4 0 0]
+MF4='Boost_Small':'trapmf',[0 0 3.5 5]
+MF5='Boost_Mid':'trimf',[4 5 6]
+MF6='Boost_Big':'trapmf',[5 6.5 10 10]
+
+[Input4]
+Name='Amp_Aver_B1'
+Range=[0 0.5]
+NumMFs=3
+MF1='Aver_Small':'trapmf',[0 0 0.138227513227513 0.233]
+MF2='Aver_Mid':'trapmf',[0.158201058201058 0.228201058201058 0.338201058201058 0.408201058201058]
+MF3='Aver_Big':'trapmf',[0.37 0.4 0.5 0.5]
+
+[Input5]
+Name='Amp_Aver_B2'
+Range=[0 0.5]
+NumMFs=3
+MF1='Aver_Small':'trapmf',[0 0 0.1382 0.233]
+MF2='Aver_Mid':'trapmf',[0.1582 0.2282 0.3382 0.4082]
+MF3='Aver_Big':'trapmf',[0.37 0.4 0.5 0.5]
+
+[Input6]
+Name='Amp_Aver_B3'
+Range=[0 0.5]
+NumMFs=3
+MF1='Aver_Small':'trapmf',[0 0 0.1382 0.233]
+MF2='Aver_Mid':'trapmf',[0.1582 0.2282 0.3382 0.4082]
+MF3='Aver_Big':'trapmf',[0.37 0.4 0.5 0.5]
+
+[Output1]
+Name='B1_Gain'
+Range=[-12 12]
+NumMFs=5
+MF1='Cut_Big':'trapmf',[-12 -12 -8 -6]
+MF2='Cut_Small':'trapmf',[-8 -4 0 0]
+MF3='Boodt_Mid':'trimf',[4 6.06 8]
+MF4='Boost_Small':'trapmf',[0 0 3 4.8]
+MF5='Boost_Big':'trapmf',[7 9 12 12]
+
+[Output2]
+Name='B2_Gain'
+Range=[-12 12]
+NumMFs=5
+MF1='Boodt_Mid':'trimf',[4 6 8]
+MF2='Cut_Big':'trapmf',[-12 -12 -8 -6]
+MF3='Cut_Small':'trapmf',[-8 -4 0 0]
+MF4='Boost_Small':'trapmf',[0 0 3 4.8]
+MF5='Boost_Big':'trapmf',[7 9 12 12]
+
+[Output3]
+Name='B3_Gain'
+Range=[-12 12]
+NumMFs=5
+MF1='Cut_Big':'trapmf',[-12 -12 -8 -6]
+MF2='Cut_Small':'trapmf',[-8 -4 0 0]
+MF3='Boost_Small':'trapmf',[0 0 3 4.8]
+MF4='Boodt_Mid':'trimf',[4 6 8]
+MF5='Boost_Big':'trapmf',[7 9 12 12]
+
+[Rules]
+1 0 0 1 0 0, 2 4 3 (1) : 1
+1 0 0 2 0 0, 1 0 0 (1) : 1
+1 0 0 3 0 0, 1 0 0 (1) : 1
+2 0 0 1 0 0, 2 1 4 (1) : 1
+2 0 0 2 0 0, 1 0 0 (1) : 1
+2 0 0 3 0 0, 1 0 0 (1) : 1
+4 0 0 1 0 0, 2 0 0 (1) : 1
+4 0 0 2 0 0, 2 0 0 (1) : 1
+4 0 0 3 0 0, 2 0 0 (1) : 1
+3 0 0 1 0 0, 4 0 0 (1) : 1
+3 0 0 2 0 0, 4 0 0 (1) : 1
+3 0 0 3 0 0, 4 0 0 (1) : 1
+5 0 0 1 0 0, 3 0 0 (1) : 1
+5 0 0 2 0 0, 3 0 0 (1) : 1
+5 0 0 3 0 0, 4 3 2 (1) : 1
+6 0 0 1 0 0, 5 0 0 (1) : 1
+6 0 0 2 0 0, 4 3 2 (1) : 1
+6 0 0 3 0 0, 0 2 1 (1) : 1
+0 1 0 0 1 0, 4 3 3 (1) : 1
+0 1 0 0 2 0, 0 2 0 (1) : 1
+0 1 0 0 3 0, 0 2 0 (1) : 1
+0 5 0 0 1 0, 3 3 4 (1) : 1
+0 5 0 0 2 0, 0 2 0 (1) : 1
+0 5 0 0 3 0, 0 2 0 (1) : 1
+0 4 0 0 1 0, 0 3 0 (1) : 1
+0 4 0 0 2 0, 0 3 0 (1) : 1
+0 4 0 0 3 0, 0 3 0 (1) : 1
+0 2 0 0 1 0, 0 4 0 (1) : 1
+0 2 0 0 2 0, 0 4 0 (1) : 1
+0 2 0 0 3 0, 0 4 0 (1) : 1
+0 3 0 0 1 0, 0 1 0 (1) : 1
+0 3 0 0 2 0, 0 1 0 (1) : 1
+0 3 0 0 3 0, 2 4 2 (1) : 1
+0 6 0 0 1 0, 0 5 0 (1) : 1
+0 6 0 0 2 0, 2 4 2 (1) : 1
+0 6 0 0 3 0, 1 0 1 (1) : 1
+0 0 1 0 0 1, 4 4 2 (1) : 1
+0 0 1 0 0 2, 0 0 1 (1) : 1
+0 0 1 0 0 3, 0 0 1 (1) : 1
+0 0 2 0 0 1, 3 1 2 (1) : 1
+0 0 2 0 0 2, 0 0 1 (1) : 1
+0 0 2 0 0 3, 0 0 1 (1) : 1
+0 0 3 0 0 1, 0 0 2 (1) : 1
+0 0 3 0 0 2, 0 0 2 (1) : 1
+0 0 3 0 0 3, 0 0 2 (1) : 1
+0 0 4 0 0 1, 0 0 3 (1) : 1
+0 0 4 0 0 2, 0 0 3 (1) : 1
+0 0 4 0 0 3, 0 0 3 (1) : 1
+0 0 5 0 0 1, 0 0 4 (1) : 1
+0 0 5 0 0 2, 0 0 4 (1) : 1
+0 0 5 0 0 3, 2 3 3 (1) : 1
+0 0 6 0 0 1, 0 0 5 (1) : 1
+0 0 6 0 0 2, 2 3 3 (1) : 1
+0 0 6 0 0 3, 1 2 0 (1) : 1
